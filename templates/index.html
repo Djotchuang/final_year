@@ -1,0 +1,281 @@
+{% extends "layout.html" %} {% block content %}
+
+<!-- slider_area_start -->
+<div class="slider_area">
+  <div class="single_slider d-flex align-items-center slider_bg_1">
+    <div class="container">
+      <div class="row align-items-center justify-content-center">
+        <div class="col-xl-10">
+          <div class="slider_text text-center justify-content-center">
+            <p>Verify your news</p>
+            <h3>Use the fields below to get the truth value of the news</h3>
+            <div class="row">
+              <div class="col-lg-12 mb-2">
+                <form
+                  class="form-contact contact_form index-form"
+                  action="{{ url_for('predict') }}"
+                  method="post"
+                  id="contactForm"
+                  novalidate="novalidate"
+                >
+                  <div class="row">
+                    <div class="col-sm-4">
+                      <div class="form-group">
+                        <input
+                          class="form-control"
+                          name="author"
+                          id="author"
+                          type="text"
+                          onfocus="this.placeholder = ''"
+                          onblur="this.placeholder = 'Author'"
+                          placeholder="Author"
+                        />
+                      </div>
+                    </div>
+                    <div class="col-sm-8">
+                      <div class="form-group">
+                        <input
+                          class="form-control"
+                          name="title"
+                          id="title"
+                          type="text"
+                          onfocus="this.placeholder = ''"
+                          onblur="this.placeholder = 'Title'"
+                          placeholder="Title"
+                        />
+                      </div>
+                    </div>
+                    <div class="col-12">
+                      <div class="form-group">
+                        <textarea
+                          class="form-control w-100"
+                          name="maintext"
+                          id="maintext"
+                          rows="3"
+                          onfocus="this.placeholder = ''"
+                          onblur="this.placeholder = 'Paste the news here...'"
+                          placeholder="Paste or type the news here..."
+                        ></textarea>
+                      </div>
+                      <div class="form-group mt-3 text-left">
+                        <div class="d-flex">
+                          <button
+                            type="submit"
+                            class="button btn-verify boxed-btn mr-4"
+                            data-toggle="modal"
+                            data-target="#exampleModal"
+                          >
+                            Verify
+                          </button>
+                          <button
+                            type="button"
+                            data-toggle="collapse"
+                            data-target="#other-methods"
+                            class="button btn-verify boxed-btn"
+                          >
+                            Use another method
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <div class="row collapse" id="other-methods">
+              <div class="col-lg-5 mb-2">
+                <h3 class="text-center">Check News Using an Image</h3>
+                <form
+                  action="{{url_for('extract_text')}}"
+                  method="post"
+                  enctype="multipart/form-data"
+                >
+                  <div
+                    class="input-group mb-3 px-2 py-2 rounded-pill bg-white shadow-sm"
+                  >
+                    <input
+                      id="upload"
+                      type="file"
+                      name="file"
+                      onchange="readURL(this);"
+                      class="form-control border-0"
+                    />
+                    <label
+                      id="upload-label"
+                      for="upload"
+                      class="font-weight-light text-muted"
+                      >Select Image</label
+                    >
+                    <div class="input-group-append">
+                      <label
+                        for="upload"
+                        class="btn btn-light m-0 rounded-pill px-4"
+                      >
+                        <i class="fa fa-cloud-upload mr-2 text-muted"></i
+                        ><small
+                          class="text-uppercase font-weight-bold text-muted"
+                          >Select Image</small
+                        ></label
+                      >
+                    </div>
+                  </div>
+
+                  <!-- Uploaded image area-->
+                  <p class="font-italic text-white text-left">
+                    The uploaded image will be rendered inside the box below.
+                  </p>
+                  <div class="image-area mt-4">
+                    <img
+                      id="imageResult"
+                      src=""
+                      alt="News Image"
+                      class="img-fluid rounded shadow-sm mx-auto d-none"
+                    />
+                  </div>
+                  <div class="form-group mt-3 text-left">
+                    <button
+                      type="submit"
+                      class="btn-verify button boxed-btn"
+                      data-toggle="modal"
+                      data-target="#exampleModal"
+                    >
+                      Verify
+                    </button>
+                  </div>
+                </form>
+              </div>
+              <div class="col-lg-1"></div>
+              <div class="col-lg-6 mb-2">
+                <h3 class="text-center">Check News Using a URL (Link)</h3>
+                <form action="{{url_for('predict_url')}}" method="post">
+                  <div class="form-group">
+                    <input
+                      class="form-control"
+                      name="url"
+                      id="url"
+                      type=""
+                      onfocus="this.placeholder = ''"
+                      onblur="this.placeholder = 'Paste the url (link) here...'"
+                      placeholder="Paste the url (link) here..."
+                    />
+                  </div>
+                  <div class="form-group mt-3 text-left">
+                    <button
+                      type="submit"
+                      class="btn-verify button btn_4 boxed-btn"
+                      data-toggle="modal"
+                      data-target="#exampleModal"
+                    >
+                      Verify
+                    </button>
+                  </div>
+                  <div class="form-group mt-4">
+                    <h4 class="text-left text-topic">Extracted Text</h4>
+                    <textarea
+                      class="form-control w-100"
+                      name="extracted-text"
+                      id="extracted-text"
+                      rows="4"
+                    ></textarea>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Use a modal to display the results -->
+          <!-- <div class="modal" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title">Verification Results</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <p>{{prediction}}</p>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-result" data-dismiss="modal">Close</button>
+                  </div>
+                </div>
+              </div>
+            </div> -->
+          <p>{{prediction}}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- slider_area_end -->
+
+<!-- about_mission  -->
+<div class="about_mission">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-xl-6 col-md-6">
+        <div class="about_thumb">
+          <img
+            src="{{ url_for('static', filename='img/about/small_2.png') }}"
+            alt=""
+          />
+        </div>
+      </div>
+      <div class="col-xl-6 col-md-6">
+        <div class="about_text">
+          <h4>What is NaFake?</h4>
+          <p>
+            NaFake is a Fake News Detection platform. It's model is built with
+            the LinearSVC Machine Learning algorithm. The accuracy of the model
+            is 98%. <br />
+            You can use the detector in any of these ways:
+          </p>
+          <ul>
+            <li>
+              Fill in the author, title and news text in the fields provided and
+              click/press the verify button.
+            </li>
+            <li>
+              Insert the url (link) of the news in the box provided and
+              click/press verify.
+            </li>
+            <li>
+              Insert a screenshot of the news. The text is extracted and
+              displayed. You can modify this text if there are errors, then
+              click verify.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!--/ about_mission -->
+
+<!-- sprayed_area  -->
+<div class="sprayed_area overlay">
+  <div class="container">
+    <div class="row">
+      <div class="col-xl-12">
+        <div class="text text-center">
+          <h3>Assert Your News with Us</h3>
+          <p>
+            You can use our API to add credibility to your News. Many will love
+            to know that your news is sure and verified. <br />
+            Contact us to know how.
+          </p>
+          <a
+            href="{{ url_for('pages', name='contact.html') }}"
+            class="boxed-btn btn-assert"
+            >Contact Us</a
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!--/ sprayed_area end  -->
+
+{% endblock %}
