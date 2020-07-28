@@ -122,9 +122,6 @@
             </ul>
           </div>
           <div class="navbar-nav ml-auto action-buttons">
-            <!-- {% if session['username'] %}
-            <h2>{{ session['username'] }}</h2>
-            {% else %} -->
             <div class="nav-item">
               <a
                 href="#"
@@ -134,6 +131,7 @@
               >
               <div class="dropdown-menu action-form">
                 <form action="{{ url_for('login') }}" method="post">
+                  <div class="msg">{{ login_msg }}</div>
                   <div class="form-group">
                     <input
                       type="text"
@@ -172,6 +170,7 @@
                   <p class="hint-text">
                     Fill in this form to create your account!
                   </p>
+                  <div class="msg">{{ sign_up_msg }}</div>
                   <div class="form-group">
                     <input
                       type="text"
@@ -241,7 +240,7 @@
                 <p>
                   NaFake is what you need for credibility, assurance and
                   guarantee of all your news items. <br />
-                  Follow me on social media:
+                  Follow us on social media:
                 </p>
                 <div class="social_links">
                   <ul>
@@ -313,10 +312,7 @@
                   Contact Us
                 </h3>
                 <form
-                  action=""
-                  method="post"
                   class="newsletter_form"
-                  data-netlify="true"
                 >
                   <input type="email" placeholder="Enter your email" />
                   <button type="submit">Contact Us</button>
@@ -339,7 +335,7 @@
                 <script>
                   document.write(new Date().getFullYear());
                 </script>
-                Built for Final Year project by
+                Designed for Final Year project by
                 <a
                   href="https://www.linkedin.com/in/djotchuangtamo/"
                   target="_blank"

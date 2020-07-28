@@ -12,15 +12,9 @@ def scrape_text(url):
     article.parse()
     article.nlp()
 
-    authors = article.authors
-    news_authors = ''
-
-    for author in authors:
-        news_authors += author
-
     title = article.title
     text = article.text
 
-    total = [news_authors + title + text]
+    total = [title + text]
 
     return total

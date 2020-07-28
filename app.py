@@ -1,5 +1,6 @@
-from flask import Flask, abort, jsonify, request, render_template, url_for, send_from_directory, session
-from flask_mysqldb import MySQL, MySQLdb
+from flask import Flask, abort, jsonify, request, render_template, url_for, send_from_directory, session, redirect
+from flask_mysqldb import MySQL
+import MySQLdb.cursors
 from werkzeug.debug import get_current_traceback
 from werkzeug.utils import secure_filename
 
@@ -7,30 +8,56 @@ import joblib
 import socket
 import json
 import bcrypt
+import re
 
 # Import dependent files
 from model import *
-from ocr import *
 from scrape_data import *
 
 
 model = joblib.load('./model.sav')
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'static/img/saved_images'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
-# app.config['MYSQL_HOST'] = 'localhost'
-# app.config['MYSQL_USER'] = 'root'
-# app.config['MYSQL_PASSWORD'] = ''
-# app.config['MYSQL_DB'] = 'nafake'
-# app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
-# mysql = MySQL(app)
+# Database connection details below
+app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_USER'] = 'root'
+app.config['MYSQL_PASSWORD'] = ''
+app.config['MYSQL_DB'] = 'nafake'
+
+# Intialize MySQL
+mysql = MySQL(app)
 
 
 @app.route('/')
 def home():
     return render_template('index.html')
+
+
+@app.route('/dashboard')
+def dashboard():
+    # Check if user is loggedin
+    if 'loggedin' in session:
+        # User is loggedin show them the home page
+        return render_template('home.html', username=session['username'])
+    # User is not loggedin redirect to login page
+    return redirect(url_for('login'))
+
+
+@app.route('/profile')
+def profile():
+    # Check if user is loggedin
+    if 'loggedin' in session:
+        # We need all the account info for the user so we can display it on the profile page
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM accounts WHERE id = %s',
+                       (session['id'],))
+        account = cursor.fetchone()
+        # Show the profile page with account info
+        return render_template('profile.html', account=account)
+    # User is not loggedin redirect to login page
+    return redirect(url_for('login'))
+
 
 
 @app.route('/<name>')
@@ -58,40 +85,87 @@ def internal_error(e):
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
-    if request.method == 'GET':
-        return render_template('index.html')
-    else:
+    # Output message if something goes wrong...
+    sign_up_msg = ''
+    # Check if "username", "password", "confirmpassword" and "email" POST requests exist (user submitted form)
+    if request.method == 'POST' and 'username' in request.form and 'password' in request.form and 'confirmpassword' in request.form and 'email' in request.form:
+        # Create variables for easy access
         username = request.form['username']
-        email = request.form['email']
         password = request.form['password']
         confirmpassword = request.form['confirmpassword']
+        email = request.form['email']
 
-        if password == confirmpassword:
-            password = password.encode('utf-8')
-            password_hash = bcrypt.hashpw(password, bcrypt.gensalt())
-
-            cur = mysql.connection.cursor()
-            sql = "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)", (
-                username, email, password_hash,)
-
-            cur.execute(sql)
-            mysql.connection.commit()
-
-            # session['username'] = username
-            # session['email'] = email
-
-            return redirect(url_for('home'))
-
+        # Check if account exists using MySQL
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute(
+            'SELECT * FROM accounts WHERE username = %s', (username,))
+        account = cursor.fetchone()
+        # If account exists show error and validation checks
+        if account:
+            sign_up_msg = 'Account already exists!'
+        elif not re.match(r'[^@]+@[^@]+\.[^@]+', email):
+            sign_up_msg = 'Invalid email address!'
+        elif not re.match(r'[A-Za-z0-9]+', username):
+            sign_up_msg = 'Username must contain only characters and numbers!'
+        elif not (password == confirmpassword):
+            sign_up_msg = 'Your passwords do not match!'
+        elif not username or not password or not confirmpassword or not email:
+            sign_up_msg = 'All fields are mandatory!'
         else:
-            return redirect(url_for('home'), error="Passwords do not match")
+            # Account doesn't exist and the form data is valid, now insert new account into accounts table
+            cursor.execute(
+                'INSERT INTO accounts VALUES (NULL, %s, %s, %s)', (username, password, email,))
+            mysql.connection.commit()
+            sign_up_msg = 'Signed up successfully! Please login.'
+            return redirect(url_for('login'))
+
+    elif request.method == 'POST':
+        # Form is empty... (no POST data)
+        sign_up_msg = 'Please fill out the form!'
+    # Show registration form with message (if any)
+    return render_template('register.html', sign_up_msg=sign_up_msg)
+
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'GET':
-        return render_template('index.html')
-    else:
-        return redirect(url_for('home'))
+    # Output message if something goes wrong...
+    login_msg = ''
+    # Check if "username" and "password" POST requests exist (user submitted form)
+    if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
+        # Create variables for easy access
+        username = request.form['username']
+        password = request.form['password']
+        # Check if account exists using MySQL
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute(
+            'SELECT * FROM accounts WHERE username = %s AND password = %s', (username, password,))
+        # Fetch one record and return result
+        account = cursor.fetchone()
+        # If account exists in accounts table in out database
+        if account:
+            # Create session data, we can access this data in other routes
+            session['loggedin'] = True
+            session['id'] = account['id']
+            session['username'] = account['username']
+
+            # Redirect to home page
+            return redirect(url_for('dashboard'))
+        else:
+            # Account doesnt exist or username/password incorrect
+            login_msg = 'Incorrect username and/or password!'
+    # Show the login form with message (if any)
+    return render_template('index.html', login_msg=login_msg)
+
+
+@app.route('/logout')
+def logout():
+    # Remove session data, this will log the user out
+    session.pop('loggedin', None)
+    session.pop('id', None)
+    session.pop('username', None)
+    # Redirect to login page
+    return redirect(url_for('login'))
 
 
 # Get and predict from text
@@ -101,50 +175,14 @@ def predict():
 
     result = request.form
     query_title = result['title']
-    query_author = result['author']
     query_text = result['maintext']
 
     # Call to get text data - defined in model.py
-    query = get_all_query(query_title, query_author, query_text)
+    query = get_all_query(query_title, query_text)
 
-    user_input = {'query': query}
     pred = model.predict(query)
 
     return render_template('index.html', prediction=f'Your news is {pred[0].title()}')
-
-
-# Get and predict from image
-
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-@app.route('/predict_image', methods=['POST'])
-def extract_text():
-    if request.method == 'POST':
-        # check if the post request has the file part
-        if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        file = request.files['file']
-        # if user does not select file, browser also
-        # submit an empty part without filename
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            image_file = app.config['UPLOAD_FOLDER'] + '/' + filename
-
-    # Call to extract text from image - defined in ocr.py
-    query = [get_text(image_file)]
-
-    user_input = {'query': query}
-    pred = model.predict(query)
-
-    return render_template('index.html', prediction=f'We are result sure that your news is {pred[0]}')
 
 
 # Get and predict from url
@@ -157,11 +195,9 @@ def predict_url():
     # Call to scrape text function in scrape_data.py
     query = scrape_text(url)
 
-    user_input = {'query': query}
     pred = model.predict(query)
 
-    # print('Accuracy of SGD classifier on data: {:.2f}%'.format(round(model.score(X_train, y_train)*100, 3)))
-    return render_template('index.html', prediction=f'We are result sure that your news is {pred[0]}')
+    return render_template('index.html', prediction=f'Your news is {pred[0].title()}')
 
 
 # For direct API calls through request
@@ -172,18 +208,16 @@ def predict_api():
     data = request.get_json(force=True)
 
     query_title = data['title']
-    query_author = data['author']
     query_text = data['maintext']
 
-    query = get_all_query(query_title, query_author, query_text)
-    user_input = {'query': query}
+    query = get_all_query(query_title, query_text)
 
     pred = model.predict(query)
     output = pred[0]
     return jsonify(output)
 
-# Run app
 
+# Run app
 
 if __name__ == '__main__':
     # Get Available Socket on Computer

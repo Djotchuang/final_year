@@ -19,20 +19,7 @@
                   novalidate="novalidate"
                 >
                   <div class="row">
-                    <div class="col-sm-4">
-                      <div class="form-group">
-                        <input
-                          class="form-control"
-                          name="author"
-                          id="author"
-                          type="text"
-                          onfocus="this.placeholder = ''"
-                          onblur="this.placeholder = 'Author'"
-                          placeholder="Author"
-                        />
-                      </div>
-                    </div>
-                    <div class="col-sm-8">
+                    <div class="col-sm-12">
                       <div class="form-group">
                         <input
                           class="form-control"
@@ -84,69 +71,7 @@
             </div>
 
             <div class="row collapse" id="other-methods">
-              <div class="col-lg-5 mb-2">
-                <h3 class="text-center">Check News Using an Image</h3>
-                <form
-                  action="{{url_for('extract_text')}}"
-                  method="post"
-                  enctype="multipart/form-data"
-                >
-                  <div
-                    class="input-group mb-3 px-2 py-2 rounded-pill bg-white shadow-sm"
-                  >
-                    <input
-                      id="upload"
-                      type="file"
-                      name="file"
-                      onchange="readURL(this);"
-                      class="form-control border-0"
-                    />
-                    <label
-                      id="upload-label"
-                      for="upload"
-                      class="font-weight-light text-muted"
-                      >Select Image</label
-                    >
-                    <div class="input-group-append">
-                      <label
-                        for="upload"
-                        class="btn btn-light m-0 rounded-pill px-4"
-                      >
-                        <i class="fa fa-cloud-upload mr-2 text-muted"></i
-                        ><small
-                          class="text-uppercase font-weight-bold text-muted"
-                          >Select Image</small
-                        ></label
-                      >
-                    </div>
-                  </div>
-
-                  <!-- Uploaded image area-->
-                  <p class="font-italic text-white text-left">
-                    The uploaded image will be rendered inside the box below.
-                  </p>
-                  <div class="image-area mt-4">
-                    <img
-                      id="imageResult"
-                      src=""
-                      alt="News Image"
-                      class="img-fluid rounded shadow-sm mx-auto d-none"
-                    />
-                  </div>
-                  <div class="form-group mt-3 text-left">
-                    <button
-                      type="submit"
-                      class="btn-verify button boxed-btn"
-                      data-toggle="modal"
-                      data-target="#exampleModal"
-                    >
-                      Verify
-                    </button>
-                  </div>
-                </form>
-              </div>
-              <div class="col-lg-1"></div>
-              <div class="col-lg-6 mb-2">
+              <div class="col-12 mb-2">
                 <h3 class="text-center">Check News Using a URL (Link)</h3>
                 <form action="{{url_for('predict_url')}}" method="post">
                   <div class="form-group">
@@ -164,20 +89,9 @@
                     <button
                       type="submit"
                       class="btn-verify button btn_4 boxed-btn"
-                      data-toggle="modal"
-                      data-target="#exampleModal"
                     >
                       Verify
                     </button>
-                  </div>
-                  <div class="form-group mt-4">
-                    <h4 class="text-left text-topic">Extracted Text</h4>
-                    <textarea
-                      class="form-control w-100"
-                      name="extracted-text"
-                      id="extracted-text"
-                      rows="4"
-                    ></textarea>
                   </div>
                 </form>
               </div>
@@ -203,7 +117,7 @@
                 </div>
               </div>
             </div> -->
-          <p>{{prediction}}</p>
+          <p style="color: #fff;">{{prediction}}</p>
         </div>
       </div>
     </div>
@@ -228,23 +142,17 @@
           <h4>What is NaFake?</h4>
           <p>
             NaFake is a Fake News Detection platform. It's model is built with
-            the LinearSVC Machine Learning algorithm. The accuracy of the model
-            is 98%. <br />
+            the Passive Aggressive Classifier Machine Learning algorithm. <br />
             You can use the detector in any of these ways:
           </p>
           <ul>
             <li>
-              Fill in the author, title and news text in the fields provided and
+              Fill in the title and news text in the fields provided and
               click/press the verify button.
             </li>
             <li>
-              Insert the url (link) of the news in the box provided and
-              click/press verify.
-            </li>
-            <li>
-              Insert a screenshot of the news. The text is extracted and
-              displayed. You can modify this text if there are errors, then
-              click verify.
+              Insert the url of the news in the box provided and click/press
+              verify.
             </li>
           </ul>
         </div>
