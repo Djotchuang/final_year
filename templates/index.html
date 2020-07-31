@@ -1,4 +1,5 @@
-{% extends "layout.html" %} {% block content %}
+{% extends "layout.html" %} {% block title %}NaFake | Fake News Detection
+Platform{% endblock %} {% block content %}
 
 <!-- slider_area_start -->
 <div class="slider_area">
@@ -8,7 +9,7 @@
         <div class="col-xl-10">
           <div class="slider_text text-center justify-content-center">
             <p>Verify your news</p>
-            <h3>Use the fields below to get the truth value of the news</h3>
+            <h3>Use the fields below to check the veracity of your news</h3>
             <div class="row">
               <div class="col-lg-12 mb-2">
                 <form
@@ -48,6 +49,7 @@
                         <div class="d-flex">
                           <button
                             type="submit"
+                            id="text-verification-btn"
                             class="button btn-verify boxed-btn mr-4"
                             data-toggle="modal"
                             data-target="#exampleModal"
@@ -58,6 +60,7 @@
                             type="button"
                             data-toggle="collapse"
                             data-target="#other-methods"
+                            id="another-method-btn"
                             class="button btn-verify boxed-btn"
                           >
                             Use another method
@@ -88,6 +91,7 @@
                   <div class="form-group mt-3 text-left">
                     <button
                       type="submit"
+                      id="url-verification-btn"
                       class="btn-verify button btn_4 boxed-btn"
                     >
                       Verify
@@ -98,92 +102,87 @@
             </div>
           </div>
 
-          <!-- Use a modal to display the results -->
-          <!-- <div class="modal" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-              <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title">Verification Results</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                      <span aria-hidden="true">&times;</span>
-                    </button>
-                  </div>
-                  <div class="modal-body">
-                    <p>{{prediction}}</p>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-result" data-dismiss="modal">Close</button>
-                  </div>
-                </div>
-              </div>
-            </div> -->
-          <p style="color: #fff;">{{prediction}}</p>
+          <!-- Use a card to display the results -->
+          {% if show_predictions_modal==True %}
+          <div class="card result-card" style="width: 20rem;">
+            <div class="card-body">
+              <button type="button" id="closeCard" class="close" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+              <h5 class="card-title">Verification results</h5>
+              <p class="card-text"><strong>{{prediction}}</strong></p>
+              <p class="text-center mt-2">Log in or visit the dashboard to view/download your verification results</p>
+            </div>
+          </div>
+            {% endif %}
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
-<!-- slider_area_end -->
+  <!-- slider_area_end -->
 
-<!-- about_mission  -->
-<div class="about_mission">
-  <div class="container">
-    <div class="row align-items-center">
-      <div class="col-xl-6 col-md-6">
-        <div class="about_thumb">
-          <img
-            src="{{ url_for('static', filename='img/about/small_2.png') }}"
-            alt=""
-          />
+  <!-- about_mission  -->
+  <div class="about_mission">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-xl-6 col-md-6">
+          <div class="about_thumb">
+            <img
+              src="{{ url_for('static', filename='img/about/small_2.png') }}"
+              alt=""
+            />
+          </div>
         </div>
-      </div>
-      <div class="col-xl-6 col-md-6">
-        <div class="about_text">
-          <h4>What is NaFake?</h4>
-          <p>
-            NaFake is a Fake News Detection platform. It's model is built with
-            the Passive Aggressive Classifier Machine Learning algorithm. <br />
-            You can use the detector in any of these ways:
-          </p>
-          <ul>
-            <li>
-              Fill in the title and news text in the fields provided and
-              click/press the verify button.
-            </li>
-            <li>
-              Insert the url of the news in the box provided and click/press
-              verify.
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-<!--/ about_mission -->
-
-<!-- sprayed_area  -->
-<div class="sprayed_area overlay">
-  <div class="container">
-    <div class="row">
-      <div class="col-xl-12">
-        <div class="text text-center">
-          <h3>Assert Your News with Us</h3>
-          <p>
-            You can use our API to add credibility to your News. Many will love
-            to know that your news is sure and verified. <br />
-            Contact us to know how.
-          </p>
-          <a
-            href="{{ url_for('pages', name='contact.html') }}"
-            class="boxed-btn btn-assert"
-            >Contact Us</a
-          >
+        <div class="col-xl-6 col-md-6">
+          <div class="about_text">
+            <h4>What is NaFake?</h4>
+            <p>
+              NaFake is a Fake News Detection platform. It's model is built with
+              the Passive Aggressive Classifier Machine Learning algorithm.
+              <br />
+              You can use the detector in any of these ways:
+            </p>
+            <ul>
+              <li>
+                Fill in the title and news text in the fields provided and
+                click/press the verify button.
+              </li>
+              <li>
+                Insert the url of the news in the box provided and click/press
+                verify.
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
-<!--/ sprayed_area end  -->
+  <!--/ about_mission -->
 
-{% endblock %}
+  <!-- sprayed_area  -->
+  <div class="sprayed_area overlay">
+    <div class="container">
+      <div class="row">
+        <div class="col-xl-12">
+          <div class="text text-center">
+            <h3>Assert Your News with Us</h3>
+            <p>
+              You can use our API to add credibility to your News. Many will
+              love to know that your news is sure and verified. <br />
+              Contact us to know how.
+            </p>
+            <a
+              href="{{ url_for('pages', name='contact.html') }}"
+              class="boxed-btn btn-assert"
+              >Contact Us</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--/ sprayed_area end  -->
+
+  {% endblock %}
+</div>

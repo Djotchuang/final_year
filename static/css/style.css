@@ -39,6 +39,12 @@ button {
   outline: medium none;
 }
 
+button,
+button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 h1,
 h2,
 h3,
@@ -356,6 +362,14 @@ label {
   font-size: 14px;
 }
 
+.action-form i {
+  cursor: pointer;
+  position: absolute;
+  margin-top: 10px;
+  right: 36px;
+  z-index: 2;
+}
+
 .action-form .hint-text {
   text-align: center;
   margin-bottom: 15px;
@@ -365,6 +379,7 @@ label {
 .action-buttons .form-control {
   box-shadow: none;
   font-size: 0.85rem;
+  position: relative;
 }
 
 .action-buttons .btn-primary,
@@ -462,9 +477,15 @@ label {
   padding-bottom: 10%;
 }
 
+.dashboard {
+  padding-top: 10%;
+  padding-bottom: 5%;
+}
+
 @media (max-width: 767px) {
-  .slider_area .single_slider .slider_text {
-    margin-top: 24px;
+  .slider_area .single_slider .slider_text,
+  .dashboard {
+    margin-top: 28px;
     margin-bottom: 20px;
   }
 }
@@ -716,7 +737,7 @@ label {
 }
 
 @media (min-width: 768px) and (max-width: 991px) {
-  .slider_area .serach_icon {
+  .slider_area .search_icon {
     width: 50%;
     align-items: center;
     margin-top: 12px;
@@ -1899,4 +1920,36 @@ input[type="checkbox"] + label {
   .notfound .notfound-404 h1 {
     font-size: 112px;
   }
+}
+
+.msg {
+  text-align: center !important;
+  margin-bottom: 0.5rem !important;
+  color: tomato !important;
+}
+
+.links .nav-item a {
+  margin-right: 1rem;
+  color: #fff;
+}
+
+.links .nav-item a i {
+  margin-right: 0.3rem;
+}
+
+.links .nav-item a:hover {
+  color: #f91842;
+}
+
+.result-card {
+  width: 20rem;
+  margin: -6rem auto 2rem auto;
+}
+
+.result-card .card-text {
+  text-align: center;
+}
+
+.result-card .text-center {
+  font-size: 0.8rem;
 }

@@ -3,7 +3,9 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
-    <title>NaFake | Fake News Detection Platform</title>
+    <title>
+      {% block title %}{% endblock %}NaFake | Fake News Detection Platform
+    </title>
     <meta name="description" content="" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -121,8 +123,28 @@
               </li>
             </ul>
           </div>
-          <div class="navbar-nav ml-auto action-buttons">
+          <!-- if user is logged in, display this else display the other -->
+          {% if session['loggedin'] %}
+          <div class="navbar-nav links ml-auto">
             <div class="nav-item">
+              <a href="{{ url_for('dashboard') }}">
+                <i class="fas fa-home"></i>Dashboard</a
+              >
+            </div>
+            <div class="nav-item">
+              <a href="{{ url_for('profile') }}">
+                <i class="fas fa-user-circle"></i>Profile</a
+              >
+            </div>
+            <div class="nav-item">
+              <a href="{{ url_for('logout') }}">
+                <i class="fas fa-sign-out-alt"></i>Logout</a
+              >
+            </div>
+          </div>
+          {% else %}
+          <div class="navbar-nav ml-auto action-buttons">
+            <div class="nav-item dropdown">
               <a
                 href="#"
                 data-toggle="dropdown"
@@ -141,14 +163,16 @@
                       required="required"
                     />
                   </div>
-                  <div class="form-group">
+                  <div class="form-group d-flex">
                     <input
                       type="password"
+                      id="password"
                       class="form-control"
                       placeholder="Password"
                       name="password"
                       required="required"
                     />
+                    <i class="far fa-eye ml-auto" id="toggleIcon"></i>
                   </div>
                   <input
                     type="submit"
@@ -158,7 +182,7 @@
                 </form>
               </div>
             </div>
-            <div class="nav-item">
+            <div class="nav-item dropdown">
               <a
                 href="#"
                 data-toggle="dropdown"
@@ -189,23 +213,31 @@
                       required="required"
                     />
                   </div>
-                  <div class="form-group">
+                  <div class="form-group d-flex">
                     <input
                       type="password"
+                      id="signPassword"
                       class="form-control"
                       placeholder="Password"
                       name="password"
+                      minlength="6"
+                      maxlength="32"
                       required="required"
                     />
+                    <i class="far fa-eye ml-auto" id="toggleSignPassword1"></i>
                   </div>
-                  <div class="form-group">
+                  <div class="form-group d-flex">
                     <input
                       type="password"
+                      id="signConfirmPassword"
                       class="form-control"
                       name="confirmpassword"
                       placeholder="Confirm Password"
+                      minlength="6"
+                      maxlength="32"
                       required="required"
                     />
+                    <i class="far fa-eye ml-auto" id="toggleSignPassword2"></i>
                   </div>
                   <input
                     type="submit"
@@ -215,8 +247,8 @@
                 </form>
               </div>
             </div>
-            <!-- {% endif %} -->
           </div>
+          {% endif %}
         </div>
       </nav>
     </header>
@@ -311,9 +343,7 @@
                 <h3 class="footer_title">
                   Contact Us
                 </h3>
-                <form
-                  class="newsletter_form"
-                >
+                <form class="newsletter_form">
                   <input type="email" placeholder="Enter your email" />
                   <button type="submit">Contact Us</button>
                 </form>
@@ -352,6 +382,14 @@
     <!-- JS here -->
     <script src="{{ url_for('static', filename='js/vendor/modernizr-3.5.0.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/vendor/jquery-1.12.4.min.js') }}"></script>
+    <script
+      type="text/javascript"
+      src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.22/pdfmake.min.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"
+    ></script>
     <script src="{{ url_for('static', filename='js/popper.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/owl.carousel.min.js') }}"></script>

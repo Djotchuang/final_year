@@ -31,6 +31,16 @@ mysql = MySQL(app)
 
 @app.route('/')
 def home():
+
+    if 'loggedin' in session:
+        # We need all the account info for the user so we can display it on the profile page
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM accounts WHERE account_id = %s',
+                       (session['id'],))
+        account = cursor.fetchone()
+        # Show the profile page with account info
+        return render_template('index.html', account=account)
+
     return render_template('index.html')
 
 
@@ -38,8 +48,11 @@ def home():
 def dashboard():
     # Check if user is loggedin
     if 'loggedin' in session:
-        # User is loggedin show them the home page
-        return render_template('home.html', username=session['username'])
+        # User is loggedin show them the dashboard
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM news WHERE accounts_account_id = %s', (session['id'],))
+        result = cursor.fetchall()
+        return render_template('home.html', username=session['username'], result=result)
     # User is not loggedin redirect to login page
     return redirect(url_for('login'))
 
@@ -50,37 +63,13 @@ def profile():
     if 'loggedin' in session:
         # We need all the account info for the user so we can display it on the profile page
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute('SELECT * FROM accounts WHERE id = %s',
+        cursor.execute('SELECT * FROM accounts WHERE account_id = %s',
                        (session['id'],))
         account = cursor.fetchone()
         # Show the profile page with account info
         return render_template('profile.html', account=account)
     # User is not loggedin redirect to login page
     return redirect(url_for('login'))
-
-
-
-@app.route('/<name>')
-def pages(name):
-    try:
-        return render_template(name)
-    except Exception:
-        track = get_current_traceback(skip=1, show_hidden_frames=True,
-                                      ignore_system_exceptions=False)
-        track.log()
-        abort(500)
-
-
-@app.errorhandler(404)
-def not_found(e):
-    # Page not found
-    return render_template('404.html'), 404
-
-
-@app.errorhandler(500)
-def internal_error(e):
-
-    return render_template("404.html"), 500
 
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -112,19 +101,34 @@ def signup():
         elif not username or not password or not confirmpassword or not email:
             sign_up_msg = 'All fields are mandatory!'
         else:
+            salt = bcrypt.gensalt()
+            password = bcrypt.hashpw(password.encode('utf-8'), salt)
             # Account doesn't exist and the form data is valid, now insert new account into accounts table
             cursor.execute(
-                'INSERT INTO accounts VALUES (NULL, %s, %s, %s)', (username, password, email,))
+                'INSERT INTO accounts VALUES (NULL, %s, %s, %s)', (username, email, password))
             mysql.connection.commit()
-            sign_up_msg = 'Signed up successfully! Please login.'
-            return redirect(url_for('login'))
+            # sign_up_msg = 'Signed up successfully! Please login.'
+            # return redirect(url_for('login'))
+
+            cursor.execute(
+                'SELECT * FROM accounts WHERE username = %s AND password = %s', (username, password,))
+            # Fetch one record and return result
+            account = cursor.fetchone()
+            # If account exists in accounts table in out database
+            if account:
+                # Create session data, we can access this data in other routes
+                session['loggedin'] = True
+                session['id'] = account['account_id']
+                session['username'] = account['username']
+
+                # Redirect to home page
+                return redirect(url_for('dashboard'))
 
     elif request.method == 'POST':
         # Form is empty... (no POST data)
         sign_up_msg = 'Please fill out the form!'
     # Show registration form with message (if any)
-    return render_template('register.html', sign_up_msg=sign_up_msg)
-
+    return render_template('index.html', sign_up_msg=sign_up_msg)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -136,21 +140,25 @@ def login():
         # Create variables for easy access
         username = request.form['username']
         password = request.form['password']
-        # Check if account exists using MySQL
+
+        # Check if  exists using MySQL
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cursor.execute(
-            'SELECT * FROM accounts WHERE username = %s AND password = %s', (username, password,))
+            'SELECT * FROM accounts WHERE username = %s', (username,))
         # Fetch one record and return result
         account = cursor.fetchone()
+
         # If account exists in accounts table in out database
         if account:
-            # Create session data, we can access this data in other routes
-            session['loggedin'] = True
-            session['id'] = account['id']
-            session['username'] = account['username']
+            authenticated_user = bcrypt.checkpw(password.encode('utf-8'), account['password'].encode('utf-8'))
+            if authenticated_user:
+                # Create session data, we can access this data in other routes
+                session['loggedin'] = True
+                session['id'] = account['account_id']
+                session['username'] = account['username']
 
-            # Redirect to home page
-            return redirect(url_for('dashboard'))
+                # Redirect to home page
+                return redirect(url_for('dashboard'))
         else:
             # Account doesnt exist or username/password incorrect
             login_msg = 'Incorrect username and/or password!'
@@ -168,9 +176,32 @@ def logout():
     return redirect(url_for('login'))
 
 
+@app.route('/<name>')
+def pages(name):
+    try:
+        return render_template(name)
+    except Exception:
+        track = get_current_traceback(skip=1, show_hidden_frames=True,
+                                      ignore_system_exceptions=False)
+        track.log()
+        abort(500)
+
+
+@app.errorhandler(404)
+def not_found(e):
+    # Page not found
+    return render_template('404.html'), 404
+
+
+@app.errorhandler(500)
+def internal_error(e):
+
+    return render_template("404.html"), 500
+
+
 # Get and predict from text
 
-@app.route('/', methods=['POST'])
+@app.route('/', methods=['GET','POST'])
 def predict():
 
     result = request.form
@@ -182,22 +213,32 @@ def predict():
 
     pred = model.predict(query)
 
-    return render_template('index.html', prediction=f'Your news is {pred[0].title()}')
+    if 'loggedin' in session:
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('INSERT INTO news VALUES (NULL, %s, %s, %s, NULL, %s)', (query_title, query_text, pred[0].title(), session['id']))
+        mysql.connection.commit()
+
+    return render_template('index.html', prediction=f'We are 73% sure that your news is {pred[0].title()}', show_predictions_modal=True)
 
 
 # Get and predict from url
 
-@ app.route('/predict_url', methods=['POST'])
+@ app.route('/predict_url', methods=['GET','POST'])
 def predict_url():
     result = request.form
     url = result['url']
 
     # Call to scrape text function in scrape_data.py
-    query = scrape_text(url)
+    query, title, text = scrape_text(url)
 
     pred = model.predict(query)
 
-    return render_template('index.html', prediction=f'Your news is {pred[0].title()}')
+    if 'loggedin' in session:
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('INSERT INTO news VALUES (NULL, %s, %s, %s, %s, %s)', (title, text, pred[0].title(), url, session['id']))
+        mysql.connection.commit()
+
+    return render_template('index.html', prediction=f'We are 73% sure that your news is {pred[0].title()}', show_predictions_modal=True)
 
 
 # For direct API calls through request
@@ -213,7 +254,7 @@ def predict_api():
     query = get_all_query(query_title, query_text)
 
     pred = model.predict(query)
-    output = pred[0]
+    output = pred[0].title()
     return jsonify(output)
 
 

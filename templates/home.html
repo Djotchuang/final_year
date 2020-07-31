@@ -1,5 +1,44 @@
-{% extends 'layout.html' %} {% block title %}Dashboard{% endblock %} {% block content
-%}
-<h2>Home Page</h2>
-<p>Welcome back, {{ username }}!</p>
+{% extends 'layout.html' %} {% block title %}Dashboard - {% endblock %} {% block
+content %}
+
+<div class="container">
+  <div class="dashboard">
+    <h2>Dashboard</h2>
+    <p>
+      Hello <strong>{{username.title()}}!</strong> Here is information on your
+      verified news articles
+    </p>
+    {% if result %}
+    <table class="table table-striped" id="resultTable">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Title</th>
+          <th scope="col">Text</th>
+          <th scope="col">Url</th>
+          <th scope="col">Results</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% set count = namespace(value=1) %} {% for row in result %}
+        <tr>
+          <th scope="row">
+            {{ count.value }} {% set count.value = count.value + 1 %}
+          </th>
+          <td>{{ row['title'] }}</td>
+          <td>{{ row['text'] | truncate(150) | safe }}</td>
+          <td>{{ row['url']}}</td>
+          <td>{{ row['result'] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <button id="pdf" class="btn btn-danger">
+      <span class="fa fa-file-pdf-o"></span> Export table to PDF
+    </button>
+    {% else %}
+    <p>You have not verified any news since you created your account.</p>
+    {% endif %}
+  </div>
+</div>
 {% endblock %}

@@ -17,4 +17,4 @@ def scrape_text(url):
 
     total = [title + text]
 
-    return total
+    return total, title, text
