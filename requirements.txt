@@ -104,11 +104,8 @@ pymongo==3.10.0
 pyparsing==2.4.2
 pyrsistent==0.15.4
 PySocks==1.7.1
-pytesseract==0.3.4
 python-dateutil==2.7.5
 pytz==2020.1
-pywin32==225
-pywinpty==0.5.5
 PyYAML==5.1.2
 pyzmq==18.1.0
 qtconsole==4.5.5
