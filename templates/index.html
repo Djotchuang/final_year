@@ -111,7 +111,9 @@ Platform{% endblock %} {% block content %}
               </button>
               <h5 class="card-title">Verification results</h5>
               <p class="card-text"><strong>{{prediction}}</strong></p>
-              <p class="text-center mt-2">Log in or visit the dashboard to view/download your verification results</p>
+              {% if session['loggedin'] %}
+              <p class="text-center mt-2">Visit the dashboard to view and/or download your verification results</p>
+              {% endif %}
             </div>
           </div>
             {% endif %}

@@ -125,7 +125,7 @@
           </div>
           <!-- if user is logged in, display this else display the other -->
           {% if session['loggedin'] %}
-          <div class="navbar-nav links ml-auto">
+          <div id="login_navigation" class="navbar-nav links ml-auto">
             <div class="nav-item">
               <a href="{{ url_for('dashboard') }}">
                 <i class="fas fa-home"></i>Dashboard</a
@@ -143,7 +143,7 @@
             </div>
           </div>
           {% else %}
-          <div class="navbar-nav ml-auto action-buttons">
+          <div id="login_navigation" class="navbar-nav ml-auto action-buttons">
             <div class="nav-item dropdown">
               <a
                 href="#"
@@ -335,6 +335,17 @@
                       Contact</a
                     >
                   </li>
+                  {% if session['loggedin'] %}
+                  <li>
+                    <a href="{{ url_for('dashboard') }}">Dashboard</a>
+                  </li>
+                  <li>
+                    <a href="{{ url_for('profile') }}">Profile</a>
+                  </li>
+                  <li>
+                    <a href="{{ url_for('logout') }}">Logout</a>
+                  </li>
+                  {% endif %}
                 </ul>
               </div>
             </div>

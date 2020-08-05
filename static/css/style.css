@@ -413,6 +413,15 @@ label {
     display: block !important;
   }
 
+  #navigation li,
+  #login_navigation .nav-item {
+    margin-bottom: 0.5rem;
+  }
+
+  .action-form .hint-text {
+    color: #fff;
+  }
+
   .action-buttons .nav-item:first-child a,
   .action-buttons .nav-item:first-child a:active {
     padding: 8px 0;
